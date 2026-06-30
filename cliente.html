@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Estante - Catálogo de Livros</title>
+    <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+    <header class="hero">
+    <div class="overlay">
+        <h1>📚 Minha Estante</h1>
+        <p>Catálogo pessoal de livros</p>
+        <img src="imagens/estante.jpeg" alt="Estante de livros" class="estante-image">
+    </div>
+     </header>
+    <main>
+        <section class="filtros">
+            <div class="filtro-container">
+                <h2>Explore nossos livros</h2>
+                
+                <div class="filtro-grupo">
+                    <label for="genero-select">Pesquisar por gênero:</label>
+                    <select id="genero-select">
+                        <option value="">-- Selecione um gênero --</option>
+                        <option value="Fantasia">Fantasia</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Terror">Terror</option>
+                        <option value="Clássico">Clássico</option>
+                        <option value="Ficção Científica">Ficção Científica</option>
+                        <option value="Suspense">Suspense</option>
+                        <option value="Policial">Policial</option>
+                        <option value="Distopia">Distopia</option>
+                        <option value="Poema">Poema</option>
+                        <option value="Biografia">Biografia</option>
+                    </select>
+                    <button id="btn-genero" class="btn">Pesquisar</button>
+                </div>
+
+                <div class="filtro-grupo">
+                    <label for="paginas-input">Livros com até quantas páginas?</label>
+                    <input type="number" id="paginas-input" min="1" placeholder="300" value="300">
+                    <button id="btn-paginas" class="btn">Pesquisar</button>
+                </div>
+
+                <div class="filtro-grupo">
+                    <button id="btn-todos" class="btn btn-todos">Mostrar todos os livros</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="resultados">
+            <div id="area-resultados" class="area-resultados">
+                <img src="imagens/livroaberto.jpeg" alt="Livro aberto" class="livro-aberto">
+                <p class="mensagem-inicial">Clique em algum botão para consultar os livros.</p>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p> 2026 - Luana - Desenvolvimento Web 1</p>
+    </footer>
+    
+    <script>
+        
+ function name(params) {
+    
+ }
+// ==========================================
+// BOTÕES
+// ==========================================
+
+document.getElementById("btn-todos")
+.addEventListener("click", carregarTodosLivros);
+
+document.getElementById("btn-genero")
+.addEventListener("click", pesquisarGenero);
+
+document.getElementById("btn-paginas")
+.addEventListener("click", pesquisarPaginas);
+
+
+// ==========================================
+// MOSTRAR TODOS OS LIVROS
+// ==========================================
+
+async function carregarTodosLivros() {
+
+    try {
+
+        const response = await fetch(
+            "http://localhost:3000/livros",
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Erro ao consultar livros");
+        }
+
+        const data = await response.json();
+
+        exibirLivros(data);
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        document.getElementById("area-resultados").innerHTML =
+            "<h2>Erro ao carregar os livros.</h2>";
+
+    }
+
+}
+
+
+// ==========================================
+// PESQUISAR POR GÊNERO
+// ==========================================
+
+async function pesquisarGenero() {
+
+    const generoSelecionado =
+        document.getElementById("genero-select").value;
+
+    if (generoSelecionado === "") {
+
+        document.getElementById("area-resultados").innerHTML =
+            "<h2>Selecione um gênero.</h2>";
+
+        return;
+    }
+
+    const pacoteJSON = {
+        genero: generoSelecionado
+    };
+
+    try {
+
+        const response = await fetch(
+            "http://localhost:3000/livros/genero",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(pacoteJSON)
+            }
+        );
+
+        const data = await response.json();
+
+        exibirLivros(data);
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        document.getElementById("area-resultados").innerHTML =
+            "<h2>Erro ao pesquisar gênero.</h2>";
+
+    }
+
+}
+
+// ==========================================
+// PESQUISAR POR PÁGINAS
+// ==========================================
+
+async function pesquisarPaginas() {
+
+    const paginasSelecionadas =
+        document.getElementById("paginas-input").value;
+
+    if (paginasSelecionadas === "") {
+
+        document.getElementById("area-resultados").innerHTML =
+            "<h2>Digite um número de páginas.</h2>";
+
+        return;
+    }
+
+    const pacoteJSON = {
+        paginas: paginasSelecionadas
+    };
+
+    try {
+
+        const response = await fetch(
+            "http://localhost:3000/livros/paginas",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(pacoteJSON)
+            }
+        );
+
+        const data = await response.json();
+
+        exibirLivros(data);
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        document.getElementById("area-resultados").innerHTML =
+            "<h2>Erro ao pesquisar páginas.</h2>";
+
+    }
+
+}
+
+
+// ==========================================
+// EXIBIR LIVROS
+// ==========================================
+
+function exibirLivros(data) {
+
+    const areaResultados =
+        document.getElementById("area-resultados");
+
+    areaResultados.innerHTML = "";
+
+    if (data.length === 0) {
+
+        areaResultados.innerHTML = `
+            <h2>Nenhum livro encontrado.</h2>
+        `;
+
+        return;
+    }
+
+    data.forEach((livro) => {
+
+        let cardLivro = `
+            <div class="card">
+
+                <div class="card-imagem">
+                    <img src="${livro.imagem}">
+                </div>
+
+                <div class="card-conteudo">
+
+                    <h2 class="card-titulo">
+                        ${livro.titulo}
+                    </h2>
+
+                    <p class="card-autor">
+                        <strong>Autor:</strong>
+                        ${livro.autor}
+                    </p>
+
+                    <div class="card-info">
+
+                        <span class="info-badge">
+                            ${livro.paginas} páginas
+                        </span>
+
+                        <span class="info-badge">
+                            ${livro.ano}
+                        </span>
+
+                    </div>
+
+                    <p class="card-sinopse">
+                        ${livro.sinopse}
+                    </p>
+
+                </div>
+
+            </div>
+        `;
+
+        areaResultados.innerHTML += cardLivro;
+
+    });
+
+}
+    </script>
+</body>
+</html>
